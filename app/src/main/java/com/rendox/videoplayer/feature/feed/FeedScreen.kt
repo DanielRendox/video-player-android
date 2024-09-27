@@ -1,6 +1,7 @@
 package com.rendox.videoplayer.feature.feed
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,18 +32,38 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.dropUnlessResumed
 import com.rendox.videoplayer.R
 import com.rendox.videoplayer.model.VideoMetadata
 import com.rendox.videoplayer.ui.theme.VideoPlayerTheme
+import com.rendox.videoplayer.ui.theme.components.VideoThumbnail
 
 @Composable
 fun FeedScreenStateful(
     modifier: Modifier = Modifier,
+    openVideoDetails: (String) -> Unit,
 ) {
+    val screenState = FeedScreenState.Success(
+        videos = listOf(
+            VideoMetadata(
+                url = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                thumbUrl = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg",
+                title = "Big Buck Bunny",
+                subtitle = "By Blender Foundation",
+                description = "Big Buck Bunny tells the story of a giant rabbit with a heart bigger than himself. When one sunny day three rodents rudely harass him, something snaps... and the rabbit ain't no bunny anymore! In the typical cartoon tradition he prepares the nasty rodents a comical revenge.\n\nLicensed under the Creative Commons Attribution license\nhttp://www.bigbuckbunny.org",
+            )
+        )
+    )
     FeedScreenStateless(
         modifier = modifier,
-        screenState = FeedScreenState.Success(videos = emptyList()),
-        videoThumbnail = { }
+        screenState = screenState,
+        videoThumbnail = { thumbUrl ->
+            VideoThumbnail(
+                modifier = Modifier.fillMaxSize(),
+                thumbUrl = thumbUrl,
+            )
+        },
+        openVideoDetails = openVideoDetails,
     )
 }
 
@@ -51,9 +72,10 @@ private fun FeedScreenStateless(
     modifier: Modifier = Modifier,
     screenState: FeedScreenState,
     videoThumbnail: @Composable (String) -> Unit,
+    openVideoDetails: (String) -> Unit,
 ) {
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         topBar = {
             Row(
                 modifier = Modifier
@@ -76,10 +98,19 @@ private fun FeedScreenStateless(
                     modifier = Modifier
                         .padding(contentPadding)
                         .fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    items(screenState.videos) { video ->
-                        Column {
+                    items(
+                        items = screenState.videos,
+                        key = { it.url },
+                    ) { video ->
+                        Column(
+                            modifier = Modifier.clickable(
+                                onClick = dropUnlessResumed {
+                                    openVideoDetails(video.url)
+                                }
+                            )
+                        ) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -146,7 +177,8 @@ private fun FeedScreenPreview(
                         .fillMaxSize()
                         .background(color = Color.Gray)
                     )
-                }
+                },
+                openVideoDetails = {},
             )
         }
     }

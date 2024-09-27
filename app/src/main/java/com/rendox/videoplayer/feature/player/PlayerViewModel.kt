@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class PlayerViewModel(
+    initialVideoUrl: String,
     videoRepository: VideoRepository,
     val player: Player,
 ) : ViewModel() {
@@ -22,7 +23,7 @@ class PlayerViewModel(
     init {
         player.prepare()
         viewModelScope.launch {
-            when (val result = videoRepository.getVideoByUrl("")) {
+            when (val result = videoRepository.getVideoByUrl(initialVideoUrl)) {
                 is VpResult.Success -> {
                     val mediaItem = MediaItem.fromUri(result.data.url)
                     player.setMediaItem(mediaItem)
@@ -34,5 +35,10 @@ class PlayerViewModel(
                 }
             }
         }
+    }
+
+    override fun onCleared() {
+        player.stop()
+        super.onCleared()
     }
 }

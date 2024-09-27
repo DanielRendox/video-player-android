@@ -8,5 +8,6 @@
 - kotlinx-serialization for decoding JSON files into Kotlin objects
 - Coil for loading and caching images
 - Media3's ExoPlayer for video player functionality
+- androidx-navigation for navigating between screens
 - MVI pattern
 - CLEAN architecture with data and presentation layer

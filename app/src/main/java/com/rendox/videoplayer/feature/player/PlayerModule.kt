@@ -6,8 +6,9 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val playerScreenModule = module {
-    viewModel {
+    viewModel { parameters ->
         PlayerViewModel(
+            initialVideoUrl = parameters.get(),
             videoRepository = get(),
             player = get()
         )

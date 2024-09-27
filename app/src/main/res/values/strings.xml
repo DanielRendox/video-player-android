@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name" translatable="false">Video Player</string>
+    <string name="error_loading_image">Couldn\'t load the image</string>
 </resources>
