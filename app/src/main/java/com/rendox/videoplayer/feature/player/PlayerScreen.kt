@@ -20,12 +20,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.rendox.videoplayer.R
 import com.rendox.videoplayer.model.VideoMetadata
 import com.rendox.videoplayer.ui.theme.VideoPlayerTheme
+import com.rendox.videoplayer.ui.theme.components.ErrorDisplay
 
 @Composable
 fun PlayerScreenStateful(
@@ -80,14 +82,13 @@ private fun PlayerScreenStateless(
             }
 
             is PlayerScreenState.Error -> {
-                // TODO replace with beautiful UI and localized error message
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(
-                        text = screenState.exception.localizedMessage ?: "",
-                        textAlign = TextAlign.Center,
+                    ErrorDisplay(
+                        errorMessage = screenState.exception.localizedMessage,
+                        description = stringResource(R.string.could_not_connect_error_message),
                     )
                 }
             }

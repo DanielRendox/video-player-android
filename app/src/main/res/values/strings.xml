@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name" translatable="false">Video Player</string>
     <string name="error_loading_image">Couldn\'t load the image</string>
+    <string name="could_not_connect_error_message">Something went wrong, please check your internet connection</string>
 </resources>

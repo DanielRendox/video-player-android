@@ -39,6 +39,7 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import com.rendox.videoplayer.R
 import com.rendox.videoplayer.model.VideoMetadata
 import com.rendox.videoplayer.ui.theme.VideoPlayerTheme
+import com.rendox.videoplayer.ui.theme.components.ErrorDisplay
 import com.rendox.videoplayer.ui.theme.components.VideoThumbnail
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -135,12 +136,14 @@ private fun FeedScreenStateless(
             }
 
             is FeedScreenState.Error -> {
-                // TODO replace with beautiful UI and localized error message
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(text = screenState.exception.localizedMessage ?: "")
+                    ErrorDisplay(
+                        errorMessage = screenState.exception.localizedMessage,
+                        description = stringResource(R.string.could_not_connect_error_message),
+                    )
                 }
             }
 
