@@ -6,6 +6,7 @@ val dataModule = module {
     single<VideoRepository> {
         VideoRepositoryImpl(
             api = get(),
+            videoMetadataDao = get(),
         )
     }
 }

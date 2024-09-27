@@ -6,6 +6,7 @@ import coil.ImageLoaderFactory
 import coil.request.CachePolicy
 import coil.util.DebugLogger
 import com.rendox.videoplayer.data.dataModule
+import com.rendox.videoplayer.database.di.databaseModule
 import com.rendox.videoplayer.feature.feed.di.feedModule
 import com.rendox.videoplayer.feature.player.di.playerScreenModule
 import com.rendox.videoplayer.network.di.networkApiModule
@@ -22,6 +23,7 @@ class VpApplication : Application(), ImageLoaderFactory {
                 dataModule,
                 playerScreenModule,
                 feedModule,
+                databaseModule,
             )
         }
     }
