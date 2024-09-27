@@ -15,7 +15,7 @@ val playerScreenModule = module {
         )
     }
 
-    single<Player> {
+    factory<Player> {
         ExoPlayer.Builder(get()).build()
     }
 }
