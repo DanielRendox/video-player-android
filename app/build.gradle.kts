@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.room)
+    alias(libs.plugins.google.devtools.ksp)
 }
 
 android {
@@ -45,6 +47,9 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+    room {
+        schemaDirectory("$projectDir/schemas")
     }
 }
 
@@ -91,6 +96,11 @@ dependencies {
 
     // navigation
     implementation(libs.androidx.navigation.compose)
+
+    // local data storage
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
     // testing
     testImplementation(libs.junit)
