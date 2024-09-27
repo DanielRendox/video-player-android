@@ -1,6 +1,6 @@
 package com.rendox.videoplayer.model
 
-data class Video(
+data class VideoMetadata(
     val url: String,
     val thumbUrl: String,
     val title: String,

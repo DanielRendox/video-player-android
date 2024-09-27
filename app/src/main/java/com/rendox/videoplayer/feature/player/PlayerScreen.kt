@@ -22,7 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.rendox.videoplayer.model.Video
+import com.rendox.videoplayer.model.VideoMetadata
 import com.rendox.videoplayer.ui.theme.VideoPlayerTheme
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -76,6 +76,7 @@ private fun PlayerScreenStateless(
             }
 
             is PlayerScreenState.Error -> {
+                // TODO replace with beautiful UI and localized error message
                 Text(text = screenState.exception.message ?: "")
             }
 
@@ -97,7 +98,7 @@ private fun PlayerScreenStatePreview() {
                     )
                 },
                 screenState = PlayerScreenState.Success(
-                    video = Video(
+                    video = VideoMetadata(
                         url = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
                         thumbUrl = "http://commondatastorage.googleapis.com/gtv-videos-bucket/images/BigBuckBunny.jpg",
                         title = "Big Buck Bunny",

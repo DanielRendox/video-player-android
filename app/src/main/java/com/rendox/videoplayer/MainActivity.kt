@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.rendox.videoplayer.feature.feed.FeedScreenStateful
 import com.rendox.videoplayer.feature.player.PlayerScreenStateful
 import com.rendox.videoplayer.ui.theme.VideoPlayerTheme
 
@@ -17,7 +18,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             VideoPlayerTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    PlayerScreenStateful()
+                    FeedScreenStateful()
                 }
             }
         }
