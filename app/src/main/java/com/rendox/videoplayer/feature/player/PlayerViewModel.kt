@@ -61,11 +61,10 @@ class PlayerViewModel(
             }
         }
 
-        // Add listener to handle media item transitions (for Previous/Next button actions)
         player.addListener(object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                // Handle media item transition here (e.g., updating UI)
                 mediaItem?.let {
+                    if (it.localConfiguration?.uri.toString() == initialVideoUrl) return
                     viewModelScope.launch {
                         val videoDetails = videoRepository.getVideoByUrl(it.localConfiguration?.uri.toString())
                         if (videoDetails is VpResult.Success && videoDetails.data != null) {
@@ -80,7 +79,7 @@ class PlayerViewModel(
     }
 
     override fun onCleared() {
-        player.release() // Release player resources when ViewModel is cleared
+        player.release()
         super.onCleared()
     }
 }
