@@ -6,7 +6,8 @@ import coil.ImageLoaderFactory
 import coil.request.CachePolicy
 import coil.util.DebugLogger
 import com.rendox.videoplayer.data.dataModule
-import com.rendox.videoplayer.feature.player.playerScreenModule
+import com.rendox.videoplayer.feature.feed.di.feedModule
+import com.rendox.videoplayer.feature.player.di.playerScreenModule
 import com.rendox.videoplayer.network.di.networkApiModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -20,6 +21,7 @@ class VpApplication : Application(), ImageLoaderFactory {
                 networkApiModule,
                 dataModule,
                 playerScreenModule,
+                feedModule,
             )
         }
     }
