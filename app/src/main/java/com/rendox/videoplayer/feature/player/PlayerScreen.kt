@@ -17,8 +17,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -51,7 +53,10 @@ private fun PlayerScreenStateless(
     videoPlayer: @Composable () -> Unit,
     screenState: PlayerScreenState,
 ) {
-    Column(modifier = modifier.fillMaxSize().windowInsetsPadding(WindowInsets.systemBars)) {
+    Column(modifier = modifier
+        .fillMaxSize()
+        .windowInsetsPadding(WindowInsets.systemBars)
+    ) {
         when (screenState) {
             is PlayerScreenState.Success -> {
                 Box(
@@ -76,7 +81,15 @@ private fun PlayerScreenStateless(
 
             is PlayerScreenState.Error -> {
                 // TODO replace with beautiful UI and localized error message
-                Text(text = screenState.exception.message ?: "")
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = screenState.exception.localizedMessage ?: "",
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
 
             is PlayerScreenState.Loading -> Unit

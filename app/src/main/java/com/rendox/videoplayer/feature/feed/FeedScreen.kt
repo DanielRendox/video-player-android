@@ -144,7 +144,7 @@ private fun FeedScreenStateless(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(text = screenState.exception.message ?: "")
+                    Text(text = screenState.exception.localizedMessage ?: "")
                 }
             }
 

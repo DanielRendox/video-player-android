@@ -4,6 +4,8 @@ import org.koin.dsl.module
 
 val dataModule = module {
     single<VideoRepository> {
-        VideoRepositoryImpl()
+        VideoRepositoryImpl(
+            api = get(),
+        )
     }
 }

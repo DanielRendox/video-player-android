@@ -23,15 +23,32 @@ class PlayerViewModel(
     init {
         player.prepare()
         viewModelScope.launch {
-            when (val result = videoRepository.getVideoByUrl(initialVideoUrl)) {
+            when (val result = videoRepository.getVideos()) {
                 is VpResult.Success -> {
-                    val mediaItem = MediaItem.fromUri(result.data.url)
-                    player.setMediaItem(mediaItem)
+                    player.addMediaItems(result.data.map { MediaItem.fromUri(it.url) })
+                    player.setMediaItem(MediaItem.fromUri(initialVideoUrl))
                     player.play()
-                    _screenStateFlow.update { PlayerScreenState.Success(video = result.data) }
                 }
+
                 is VpResult.Error -> _screenStateFlow.update {
                     PlayerScreenState.Error(exception = result.exception)
+                }
+            }
+        }
+        viewModelScope.launch {
+            _screenStateFlow.update {
+                when (val result = videoRepository.getVideoByUrl(initialVideoUrl)) {
+                    is VpResult.Success -> {
+                        if (result.data != null) {
+                            PlayerScreenState.Success(video = result.data)
+                        } else {
+                            PlayerScreenState.Error(exception = VideoNotFoundException())
+                        }
+                    }
+
+                    is VpResult.Error -> {
+                        PlayerScreenState.Error(exception = result.exception)
+                    }
                 }
             }
         }
