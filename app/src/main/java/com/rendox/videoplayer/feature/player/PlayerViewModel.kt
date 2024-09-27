@@ -25,8 +25,16 @@ class PlayerViewModel(
         viewModelScope.launch {
             when (val result = videoRepository.getVideos()) {
                 is VpResult.Success -> {
-                    player.addMediaItems(result.data.map { MediaItem.fromUri(it.url) })
-                    player.setMediaItem(MediaItem.fromUri(initialVideoUrl))
+                    val mediaItems = result.data.map { MediaItem.fromUri(it.url) }
+                    player.addMediaItems(mediaItems)
+
+                    val initialMediaIndex = mediaItems.indexOfFirst {
+                        it.localConfiguration?.uri.toString() == initialVideoUrl
+                    }
+                    if (initialMediaIndex >= 0) {
+                        player.seekTo(initialMediaIndex, 0L)
+                    }
+
                     player.play()
                 }
 
@@ -52,10 +60,27 @@ class PlayerViewModel(
                 }
             }
         }
+
+        // Add listener to handle media item transitions (for Previous/Next button actions)
+        player.addListener(object : Player.Listener {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                // Handle media item transition here (e.g., updating UI)
+                mediaItem?.let {
+                    viewModelScope.launch {
+                        val videoDetails = videoRepository.getVideoByUrl(it.localConfiguration?.uri.toString())
+                        if (videoDetails is VpResult.Success && videoDetails.data != null) {
+                            _screenStateFlow.update {
+                                PlayerScreenState.Success(video = videoDetails.data)
+                            }
+                        }
+                    }
+                }
+            }
+        })
     }
 
     override fun onCleared() {
-        player.stop()
+        player.release() // Release player resources when ViewModel is cleared
         super.onCleared()
     }
 }
