@@ -2,9 +2,6 @@ package com.rendox.videoplayer.feature.player
 
 import android.content.res.Configuration
 import android.os.Build
-import android.view.View
-import android.view.Window
-import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
@@ -30,9 +27,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rendox.videoplayer.R
 import com.rendox.videoplayer.model.VideoMetadata
@@ -52,7 +53,9 @@ fun PlayerScreenStateful(
             .windowInsetsPadding(WindowInsets.systemBars),
         videoPlayer = {
             VideoPlayer(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = Color.Black),
                 player = viewModel.player,
             )
         },
@@ -68,12 +71,7 @@ private fun PlayerScreenStateless(
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val context = LocalContext.current
-    val window = (context as ComponentActivity).window
-
-    LaunchedEffect(isLandscape) {
-        if (isLandscape) hideSystemUi(window)
-    }
+    FullScreenMode(enabled = isLandscape)
 
     Column(modifier = modifier) {
         when (screenState) {
@@ -121,24 +119,25 @@ private fun PlayerScreenStateless(
     }
 }
 
-@Suppress("DEPRECATION")
-private fun hideSystemUi(window: Window) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        window.insetsController?.let { controller ->
-            controller.hide(android.view.WindowInsets.Type.systemBars())
-            controller.systemBarsBehavior =
-                WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+@Composable
+private fun FullScreenMode(enabled: Boolean) {
+    val context = LocalContext.current
+    val window = (context as ComponentActivity).window
+    val view = LocalView.current
+
+    LaunchedEffect(enabled) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && enabled) {
+            window.attributes.layoutInDisplayCutoutMode =
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+
+            val layoutNoLimitsFlag = WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+            window.setFlags(layoutNoLimitsFlag, layoutNoLimitsFlag)
+
+            val insetsController = WindowCompat.getInsetsController(window, view)
+            insetsController.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            insetsController.hide(WindowInsetsCompat.Type.systemBars())
         }
-    } else {
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN
-        )
-        window.decorView.systemUiVisibility = (
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                        or View.SYSTEM_UI_FLAG_FULLSCREEN
-                )
     }
 }
 
