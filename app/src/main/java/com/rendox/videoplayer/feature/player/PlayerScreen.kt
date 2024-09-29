@@ -1,5 +1,12 @@
 package com.rendox.videoplayer.feature.player
 
+import android.content.res.Configuration
+import android.os.Build
+import android.view.View
+import android.view.Window
+import android.view.WindowInsetsController
+import android.view.WindowManager
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,10 +23,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -35,13 +45,14 @@ fun PlayerScreenStateful(
     viewModel: PlayerViewModel,
 ) {
     val screenState by viewModel.screenStateFlow.collectAsStateWithLifecycle()
+
     PlayerScreenStateless(
-        modifier = modifier,
+        modifier = modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.systemBars),
         videoPlayer = {
             VideoPlayer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(16 / 9F),
+                modifier = Modifier.fillMaxSize(),
                 player = viewModel.player,
             )
         },
@@ -55,29 +66,41 @@ private fun PlayerScreenStateless(
     videoPlayer: @Composable () -> Unit,
     screenState: PlayerScreenState,
 ) {
-    Column(modifier = modifier
-        .fillMaxSize()
-        .windowInsetsPadding(WindowInsets.systemBars)
-    ) {
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val context = LocalContext.current
+    val window = (context as ComponentActivity).window
+
+    LaunchedEffect(isLandscape) {
+        if (isLandscape) hideSystemUi(window)
+    }
+
+    Column(modifier = modifier) {
         when (screenState) {
             is PlayerScreenState.Success -> {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(16 / 9F),
+                    modifier = if (isLandscape) {
+                        Modifier.fillMaxSize()
+                    } else {
+                        Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(16 / 9F)
+                    },
                     content = { videoPlayer() },
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Text(
-                        text = screenState.video.title,
-                        style = MaterialTheme.typography.titleLarge,
-                    )
+                if (!isLandscape) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = screenState.video.description,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        Text(
+                            text = screenState.video.title,
+                            style = MaterialTheme.typography.titleLarge,
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = screenState.video.description,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
                 }
             }
 
@@ -95,6 +118,27 @@ private fun PlayerScreenStateless(
 
             is PlayerScreenState.Loading -> Unit
         }
+    }
+}
+
+@Suppress("DEPRECATION")
+private fun hideSystemUi(window: Window) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        window.insetsController?.let { controller ->
+            controller.hide(android.view.WindowInsets.Type.systemBars())
+            controller.systemBarsBehavior =
+                WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    } else {
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN
+        )
+        window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                )
     }
 }
 
