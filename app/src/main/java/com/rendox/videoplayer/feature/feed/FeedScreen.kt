@@ -1,5 +1,6 @@
 package com.rendox.videoplayer.feature.feed
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,10 +29,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -70,6 +72,9 @@ private fun FeedScreenStateless(
     videoThumbnail: @Composable (String) -> Unit,
     openVideoDetails: (String) -> Unit,
 ) {
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -101,34 +106,26 @@ private fun FeedScreenStateless(
                         items = screenState.videos,
                         key = { it.url },
                     ) { video ->
-                        Column(
-                            modifier = Modifier.clickable(
-                                onClick = dropUnlessResumed {
-                                    openVideoDetails(video.url)
-                                }
-                            )
-                        ) {
-                            Box(
+                        val safelyOpenVideoDetails = dropUnlessResumed {
+                            openVideoDetails(video.url)
+                        }
+
+                        if (isLandscape) {
+                            FeedItemLandscape(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .aspectRatio(16 / 9F)
-                            ) {
-                                videoThumbnail(video.thumbUrl)
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                text = video.title,
-                                style = MaterialTheme.typography.titleMedium,
-                                maxLines = 2,
+                                    .padding(horizontal = 16.dp)
+                                    .clickable(onClick = safelyOpenVideoDetails),
+                                videoThumbnail = videoThumbnail,
+                                video = video,
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                text = video.subtitle,
-                                style = MaterialTheme.typography.bodySmall,
-                                maxLines = 1,
+                        } else {
+                            FeedItemPortrait(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(onClick = safelyOpenVideoDetails),
+                                videoThumbnail = videoThumbnail,
+                                video = video,
                             )
                         }
                     }
@@ -152,7 +149,71 @@ private fun FeedScreenStateless(
     }
 }
 
-@Preview
+@Composable
+private fun FeedItemPortrait(
+    modifier: Modifier = Modifier,
+    videoThumbnail: @Composable (String) -> Unit,
+    video: VideoMetadata,
+) {
+    Column(modifier = modifier) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(16 / 9F)
+        ) {
+            videoThumbnail(video.thumbUrl)
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(horizontal = 16.dp),
+            text = video.title,
+            style = MaterialTheme.typography.titleMedium,
+            maxLines = 2,
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            text = video.subtitle,
+            style = MaterialTheme.typography.bodySmall,
+            maxLines = 1,
+        )
+    }
+}
+
+@Composable
+private fun FeedItemLandscape(
+    modifier: Modifier = Modifier,
+    videoThumbnail: @Composable (String) -> Unit,
+    video: VideoMetadata,
+) {
+    Row(modifier = modifier) {
+        Box(
+            modifier = Modifier
+                .width(150.dp)
+                .aspectRatio(16 / 9F)
+        ) {
+            videoThumbnail(video.thumbUrl)
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                overflow = TextOverflow.Ellipsis,
+                text = video.title,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 2,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = video.subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+            )
+        }
+    }
+}
+
+@PreviewScreenSizes
 @Composable
 private fun FeedScreenPreview(
     @PreviewParameter(provider = LoremIpsum::class) loremIpsum: String,
@@ -161,9 +222,9 @@ private fun FeedScreenPreview(
         Surface(modifier = Modifier.fillMaxSize()) {
             FeedScreenStateless(
                 screenState = FeedScreenState.Success(
-                    videos = List(10) {
+                    videos = List(10) { index ->
                         VideoMetadata(
-                            url = "",
+                            url = index.toString(),
                             thumbUrl = "",
                             title = loremIpsum,
                             subtitle = loremIpsum,
