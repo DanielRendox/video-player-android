@@ -21,6 +21,7 @@ class PlayerViewModel(
     val screenStateFlow = _screenStateFlow.asStateFlow()
 
     init {
+        println("PlayerViewModel initialVideoUrl: $initialVideoUrl")
         player.prepare()
         viewModelScope.launch {
             when (val result = videoRepository.getVideos()) {
@@ -42,6 +43,22 @@ class PlayerViewModel(
                     PlayerScreenState.Error(exception = result.exception)
                 }
             }
+
+            player.addListener(object : Player.Listener {
+                override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                    println("onMediaItemTransition mediaItem = $mediaItem")
+                    mediaItem?.let {
+                        viewModelScope.launch {
+                            val videoDetails = videoRepository.getVideoByUrl(it.localConfiguration?.uri.toString())
+                            if (videoDetails is VpResult.Success && videoDetails.data != null) {
+                                _screenStateFlow.update {
+                                    PlayerScreenState.Success(video = videoDetails.data)
+                                }
+                            }
+                        }
+                    }
+                }
+            })
         }
         viewModelScope.launch {
             _screenStateFlow.update {
@@ -60,22 +77,6 @@ class PlayerViewModel(
                 }
             }
         }
-
-        player.addListener(object : Player.Listener {
-            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                mediaItem?.let {
-                    if (it.localConfiguration?.uri.toString() == initialVideoUrl) return
-                    viewModelScope.launch {
-                        val videoDetails = videoRepository.getVideoByUrl(it.localConfiguration?.uri.toString())
-                        if (videoDetails is VpResult.Success && videoDetails.data != null) {
-                            _screenStateFlow.update {
-                                PlayerScreenState.Success(video = videoDetails.data)
-                            }
-                        }
-                    }
-                }
-            }
-        })
     }
 
     override fun onCleared() {
