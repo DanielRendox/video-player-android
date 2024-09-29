@@ -21,7 +21,6 @@ class PlayerViewModel(
     val screenStateFlow = _screenStateFlow.asStateFlow()
 
     init {
-        println("PlayerViewModel initialVideoUrl: $initialVideoUrl")
         player.prepare()
         viewModelScope.launch {
             when (val result = videoRepository.getVideos()) {
@@ -46,7 +45,6 @@ class PlayerViewModel(
 
             player.addListener(object : Player.Listener {
                 override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                    println("onMediaItemTransition mediaItem = $mediaItem")
                     mediaItem?.let {
                         viewModelScope.launch {
                             val videoDetails = videoRepository.getVideoByUrl(it.localConfiguration?.uri.toString())
